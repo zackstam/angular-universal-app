@@ -3,10 +3,11 @@
   "version": "0.0.0",
   "scripts": {
     "ng": "ng",
-    "start": "ng serve",
-    "build": "ng build",
+    "build": "ng build --prod",
     "test": "ng test",
-    "prerender": "ts-node prerender.ts --url='/contact'",
+    "prerender": "ts-node prerender.ts",
+    "server": "ts-node server.ts",
+    "start": "ng serve",
     "lint": "ng lint",
     "e2e": "ng e2e"
   },

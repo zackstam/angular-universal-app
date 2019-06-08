@@ -1,0 +1,33 @@
+// These are important and needed before anything else
+import 'zone.js/dist/zone-node';
+import 'reflect-metadata';
+import { renderModuleFactory } from '@angular/platform-server';
+import * as express from 'express';
+import { readFileSync } from 'fs';
+import { enableProdMode } from '@angular/core';
+
+const { AppServerModuleNgFactory } = require('./dist/server/main');
+enableProdMode();
+
+const app = express();
+
+const indexHtml = readFileSync(__dirname + '/dist/browser/index.html', 'utf-8').toString();
+
+// Server static files from /browser
+app.get('*.*', express.static(__dirname + '/dist/browser', {
+    maxAge: '1y'
+}));
+app.route('*').get((req, res) => {
+    renderModuleFactory(AppServerModuleNgFactory, {
+        document: indexHtml,
+        url: req.url
+    }).then(html => res.status(200).send(html))
+      .catch(err => {
+          console.log(err);
+          res.sendStatus(500);
+      });
+});
+
+app.listen(9000, () => {
+    console.log('now listening on http://localhost:9000');
+});
