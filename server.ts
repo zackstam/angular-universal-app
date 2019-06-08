@@ -1,31 +1,31 @@
 // These are important and needed before anything else
 import 'zone.js/dist/zone-node';
 import 'reflect-metadata';
-import { renderModuleFactory } from '@angular/platform-server';
+import { provideModuleMap } from '@nguniversal/module-map-ngfactory-loader';
+import { ngExpressEngine } from '@nguniversal/express-engine';
+
 import * as express from 'express';
-import { readFileSync } from 'fs';
 import { enableProdMode } from '@angular/core';
 
-const { AppServerModuleNgFactory } = require('./dist/server/main');
+const { AppServerModuleNgFactory, LAZY_MODULE_MAP } = require('./dist/server/main');
 enableProdMode();
 
 const app = express();
 
-const indexHtml = readFileSync(__dirname + '/dist/browser/index.html', 'utf-8').toString();
+app.engine('html', ngExpressEngine({
+    bootstrap: AppServerModuleNgFactory,
+    providers: [provideModuleMap(LAZY_MODULE_MAP)]
+}));
 
-// Server static files from /browser
+app.set('view engine', 'html');
+app.set('views', __dirname + '/dist/browser');
+
 app.get('*.*', express.static(__dirname + '/dist/browser', {
     maxAge: '1y'
 }));
-app.route('*').get((req, res) => {
-    renderModuleFactory(AppServerModuleNgFactory, {
-        document: indexHtml,
-        url: req.url
-    }).then(html => res.status(200).send(html))
-      .catch(err => {
-          console.log(err);
-          res.sendStatus(500);
-      });
+
+app.get('*', (req, res) => {
+    res.render(__dirname + '/dist/browser/index.html', { req });
 });
 
 app.listen(9000, () => {
