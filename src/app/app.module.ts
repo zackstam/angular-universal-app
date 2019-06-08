@@ -17,7 +17,7 @@ import { MaterialModule } from './material/material.module';
     ContactComponent
   ],
   imports: [
-    BrowserModule,
+    BrowserModule.withServerTransition({ appId: 'serverApp' }),
     AppRoutingModule,
     BrowserAnimationsModule,
     MaterialModule
